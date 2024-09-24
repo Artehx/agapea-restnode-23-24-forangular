@@ -470,7 +470,9 @@ module.exports={
         console.log('El isbn es -> ', isbn);
 
         const comentariosRef = collection(db, 'comentarios');
-        const comentariosQuery = query(comentariosRef, where('isbn13', '==', isbn));
+        const comentariosQuery = query(comentariosRef, 
+            where('isbn13', '==', isbn),
+            where('state', '==', 'Revisado'));
         const comentariosSnapshot = await getDocs(comentariosQuery);
 
         const comentarios = comentariosSnapshot.docs.map(doc => doc.data());
@@ -482,6 +484,56 @@ module.exports={
         }
 
     },
+
+    getAllCommentsUser: async(req, res, next) => {
+
+    try {
+
+    const isbn = req.query.isbn;
+    const email = req.query.email;
+
+    console.log('el isbn es -> ', isbn);
+    console.log('el email es -> ', email);
+
+    const comentariosRef = collection(db, 'comentarios');
+
+    const  userCommentQuery = query(comentariosRef,
+        where('isbn13', '==', isbn),
+        where('emailClient', '==', email)
+    );
+
+    const userCommentSnapshot = await getDocs(userCommentQuery);
+    const userComment = userCommentSnapshot.docs.map(doc => doc.data());
+
+    const reviewdCommentsQuery = query(comentariosRef,
+          where('isbn13', '==', isbn),
+          where('state', '==', 'Revisado')
+    );
+
+    const reviewdCommentsSnapshot = await getDocs(reviewdCommentsQuery);
+    const reviewdComments = reviewdCommentsSnapshot.docs.map(doc => doc.data());
+    
+    console.log('Comentarios revisados -> ', reviewdComments)
+    console.log('Comentario del usuario -> ', userComment)
+
+    res.status(200).send({
+       userComment: userComment.length > 0 ? userComment[0] : null,
+       reviewdComments: reviewdComments
+
+    })
+    
+
+    } catch (error) {
+    
+      console.log('Error al obtener comentarios del usuario: ', error)
+      res.status(500).send({message: 'Error al obtener comentarios'})  
+    }
+
+
+
+    },
+
+    
 
     getProfileImage: async(req, res, next) => {
 
@@ -506,8 +558,10 @@ module.exports={
 
             const clienteData = clienteSnapshot.docs[0].data();
             const imagenAvatarBASE64 = clienteData.cuenta.imagenAvatarBASE64;
-            console.log(imagenAvatarBASE64);
-            res.status(200).send({imagenAvatarBASE64});
+            const usuario = clienteData.cuenta.login;
+            
+            console.log("El usuario es -> ", usuario);
+            res.status(200).send({imagenAvatarBASE64, usuario});
         } else {
 
             res.status(404).send({ message: 'Usuario no encontrado'})

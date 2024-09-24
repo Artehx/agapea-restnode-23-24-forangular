@@ -20,6 +20,7 @@ router.post('/OperateBook', clienteController.operateBook);
 router.post('/RemoveList', clienteController.removeList);
 router.post('/SaveComment', clienteController.saveComment);
 router.get('/GetAllComments', clienteController.getAllComments);
+router.get('/GetAllCommentsUser', clienteController.getAllCommentsUser);
 router.get('/GetProfileImage', clienteController.getProfileImage);
 
 module.exports=router;
