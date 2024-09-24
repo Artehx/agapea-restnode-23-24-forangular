@@ -18,5 +18,8 @@ router.post('/OperarDireccion', clienteController.operarDireccion);
 router.post('/SaveList', clienteController.saveList)
 router.post('/OperateBook', clienteController.operateBook);
 router.post('/RemoveList', clienteController.removeList);
+router.post('/SaveComment', clienteController.saveComment);
+router.get('/GetAllComments', clienteController.getAllComments);
+router.get('/GetProfileImage', clienteController.getProfileImage);
 
 module.exports=router;

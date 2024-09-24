@@ -427,6 +427,99 @@ module.exports={
 
     },
 
+    saveComment: async(req, res, next) => {
+
+        console.log('Llega el comentario manin',  req.body);
+        //console.log(`Llega el comentario manin  ${(req.body)}`);
+
+        try {
+
+        let _comentarioRef = await addDoc(collection(db, 'comentarios'), req.body.comment);
+
+        console.log('GUARDA EL COMENTARIO... ');
+
+        const comentariosQuery = query(
+            collection(db, 'comentarios'),
+            where('isbn13', '==', req.body.comment.isbn13)
+        );
+
+        const comentariosSnapshot = await getDocs(comentariosQuery);
+
+        if(comentariosSnapshot.empty) {
+
+            console.log('Sin comentarios en este libro')
+
+        }
+
+        const comentarios = comentariosSnapshot.docs.map(doc => doc.data());
+
+        generaRespuesta(0, 'Comentario guardado!', null, null, null, comentarios, res);
+
+            
+        } catch (error) {
+            
+        }
+
+    },
+
+    getAllComments: async(req, res, next) => {
+
+        try {
+
+        const isbn = req.query.isbn;
+        console.log('El isbn es -> ', isbn);
+
+        const comentariosRef = collection(db, 'comentarios');
+        const comentariosQuery = query(comentariosRef, where('isbn13', '==', isbn));
+        const comentariosSnapshot = await getDocs(comentariosQuery);
+
+        const comentarios = comentariosSnapshot.docs.map(doc => doc.data());
+        console.log('Los comentarios -> ', comentarios);
+        res.status(200).send(comentarios);
+            
+        } catch (error) {
+            
+        }
+
+    },
+
+    getProfileImage: async(req, res, next) => {
+
+        try {
+
+        const userEmail = req.query.userEmail;
+
+        console.log('El email del usuario es -> ', userEmail);
+
+        const clientesRef = collection(db, 'clientes');
+
+        const clienteQuery = query(clientesRef, where('cuenta.email', '==', userEmail));
+
+        const clienteSnapshot = await getDocs(clienteQuery);
+
+        if(!clienteSnapshot.empty){
+
+            /*
+            clienteSnapshot.forEach(doc => {
+                console.log('Documento recuperado:', doc.data());
+            });*/
+
+            const clienteData = clienteSnapshot.docs[0].data();
+            const imagenAvatarBASE64 = clienteData.cuenta.imagenAvatarBASE64;
+            console.log(imagenAvatarBASE64);
+            res.status(200).send({imagenAvatarBASE64});
+        } else {
+
+            res.status(404).send({ message: 'Usuario no encontrado'})
+        }
+            
+        } catch (error) {
+            console.log('error al obtener la foto de perfil: ', error);
+        }
+
+
+    },
+
     uploadImagen: async (req,res,next)=>{
         try {
             //tengo q coger la extension del fichero, en req.body.imagen:  data:image/jpeg
