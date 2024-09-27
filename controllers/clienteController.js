@@ -511,10 +511,16 @@ module.exports={
     );
 
     const reviewdCommentsSnapshot = await getDocs(reviewdCommentsQuery);
-    const reviewdComments = reviewdCommentsSnapshot.docs.map(doc => doc.data());
+    let reviewdComments = reviewdCommentsSnapshot.docs.map(doc => doc.data());
+
+    if(userComment.length > 0) {
+        reviewdComments = reviewdComments.filter(com => com.emailClient !== email)
+    }
     
     console.log('Comentarios revisados -> ', reviewdComments)
     console.log('Comentario del usuario -> ', userComment)
+
+    
 
     res.status(200).send({
        userComment: userComment.length > 0 ? userComment[0] : null,
@@ -569,6 +575,62 @@ module.exports={
             
         } catch (error) {
             console.log('error al obtener la foto de perfil: ', error);
+        }
+
+
+    },
+
+    changeOrderList: async (req, res, next) => {
+
+        try {
+
+        console.log(req.body);
+        let books = req.body.list.books;
+        let email = req.body.email;
+        let idList = req.body.list.idList;
+
+        for (let i = 0; i < books.length; i++) {
+            console.log('Libro -> ', books[i].Titulo)
+            
+        }
+        //console.log('Libros -> ', books);
+
+        const clientesRef = collection(db, 'clientes');
+
+        const clienteQuery = query(clientesRef, where('cuenta.email', '==', email));
+
+        const clienteSnapshot = await getDocs(clienteQuery);
+
+        if(!clienteSnapshot.empty){
+            const clienteDoc = clienteSnapshot.docs[0];
+            const clienteData = clienteDoc.data();
+            console.log('idList -> ', idList)
+
+            let listToUpdate = clienteData.lists.find(list => list.idList === idList);
+
+            console.log('Lista a buscar: ', listToUpdate);
+            if(listToUpdate) {
+                listToUpdate.books = books;
+                
+                const clienteDocRef = doc(db, 'clientes', clienteDoc.id);
+
+                await updateDoc(clienteDocRef, { lists: clienteData.lists });
+
+            }
+            
+            res.status(200).send({message: 'Listas actualizadas correctamente'});
+
+        } else {
+
+            res.status(404).send({ message: 'Cliente no encontrado' });
+
+        }
+
+        
+            
+        } catch (error) {
+            console.log('Error al actualizar las listas:', error);
+            res.status(500).send({ message: 'Error interno del servidor' })
         }
 
 

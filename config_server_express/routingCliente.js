@@ -22,5 +22,6 @@ router.post('/SaveComment', clienteController.saveComment);
 router.get('/GetAllComments', clienteController.getAllComments);
 router.get('/GetAllCommentsUser', clienteController.getAllCommentsUser);
 router.get('/GetProfileImage', clienteController.getProfileImage);
+router.post('/ChangeOrderList', clienteController.changeOrderList);
 
 module.exports=router;
